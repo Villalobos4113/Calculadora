@@ -1,0 +1,117 @@
+package Syntax;
+
+import Stack.ArrayStack;
+
+public class Syntax {
+    public static boolean Syntax(String str) {
+        ArrayStack<Character> stack = new ArrayStack<Character>();
+        boolean resp = true;
+
+        if (str.length() > 0) {
+            if (!isNumeric(str)) {
+                int i = 0;
+                boolean operator = false, point = false;
+
+                while (resp && i < str.length()) {
+                    if (!(str.charAt(i) == ' ')) {
+
+                        // Char Allowed
+                        resp = CharAllowed(str.charAt(i));
+
+                        // Parentheses Reviewer
+                        if (Character.compare(str.charAt(i), '(') == 0)
+                            stack.push(str.charAt(i));
+                        if (Character.compare(str.charAt(i), ')') == 0) {
+                            if (!(stack.isEmpty()))
+                                stack.pop();
+                            else resp = false;
+                        }
+
+                        // Not double operator
+                        if (str.charAt(i) == '+' || str.charAt(i) == '-' || str.charAt(i) == '*' || str.charAt(i) == '/' || str.charAt(i) == '^') {
+                            if (operator)
+                                resp = false;
+                            else
+                                operator = true;
+                        } else
+                            operator = false;
+
+                        // % in correct position
+                        if (str.charAt(i) == '%') {
+                            if (i - 1 >= 0 && !Character.isDigit(str.charAt(i - 1)))
+                                resp = false;
+                            if (i + 1 < str.length() && Character.isDigit(str.charAt(i + 1)))
+                                resp = false;
+                        }
+
+                        // Not double point
+                        if (Character.isDigit(str.charAt(i)) || str.charAt(i) == '.') {
+                            if (str.charAt(i) == '.') {
+                                if (point)
+                                    resp = false;
+                                else
+                                    point = true;
+                            }
+                        } else
+                            point = false;
+
+                        // Not empty parentheses
+                        if (i + 1 < str.length() && str.charAt(i) == '(' && str.charAt(i + 1) == ')')
+                            resp = false;
+                    }
+
+                    i++;
+                }
+
+                if (resp)
+                    resp = validOperation(str);
+            }
+        } else
+            resp = false;
+
+        return resp;
+    }
+
+    private static boolean CharAllowed(char chr) {
+
+        return switch (chr) {
+            case '(', ')', '.', '+', '-', '*', '/', '^', '%', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> true;
+            default -> false;
+        };
+    }
+
+    private static boolean validOperation(String str) {
+        boolean num1 = false, operator = false, num2 = false;
+        int i = 0;
+
+        while (!num2 && i < str.length()) {
+            char chr = str.charAt(i);
+
+            if (Character.isDigit(chr)) {
+                if (num1 && operator)
+                    num2 = true;
+                else
+                    num1 = true;
+            } else {
+                if (chr == '+' || chr == '-' || chr == '*' || chr == '/' || chr == '^' || chr == '(')
+                    operator = true;
+            }
+
+            i++;
+        }
+
+        return num1 && operator && num2;
+    }
+
+    private static boolean isNumeric(String strNum) {
+        if (strNum == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(strNum);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
+}
